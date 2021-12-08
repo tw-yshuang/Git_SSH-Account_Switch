@@ -1,2 +1,2 @@
 # Git_SSH-Account_Switch
-A CLI tool can easy switch ssh account on your current shell, when using server you will easy switch to your git account &amp; ssh key, and control the project on the server by using your account.
+A CLI tool can easily switch ssh account to your current shell. You will easliy switch to your git account & ssh key when using server, and using your account to manipulate the project on the server.
