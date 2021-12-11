@@ -52,7 +52,7 @@ function git-acc(){
       [account]               use which account on this shell, type account name that you register.
       -h, --help              print help information.
       -add, --add_account     build git_account info. & ssh-key.
-      -rm, --remove_account    remove git_account info. & ssh-key from this device
+      -rm, --remove_account   remove git_account info. & ssh-key from this device
 
 
     EXAMPLES
