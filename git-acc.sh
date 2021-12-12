@@ -45,11 +45,11 @@ function git-acc(){
 
     SYNOPSIS
 
-      git-acc [account]/[-h]
+      git-acc [account]|[option]
 
     OPTIONS
 
-      [account]               use which account on this shell, type account name that you register.
+      [account]               use which accounts on this shell, type the account name that you register.
       -h, --help              print help information.
       -add, --add_account     build git_account info. & ssh-key.
       -rm, --remove_account   remove git_account info. & ssh-key from this device
@@ -57,7 +57,7 @@ function git-acc(){
 
     EXAMPLES
 
-      $ git-acc.sh -a default
+      $ git-acc tw-yshuan
     '
     echo $help
   }
