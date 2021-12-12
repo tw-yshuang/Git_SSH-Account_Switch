@@ -1,4 +1,4 @@
-#!/user/bin/env bash
+#!/usr/bin/env bash
 
 function git-acc(){
   local function Echo_Color(){
@@ -63,22 +63,22 @@ function git-acc(){
   }
 
   local function _acc(){
-    local users_info=$(cat "$gituser_locate" | grep -n '\[.*\]')
+    local users_info=$(cat "$gitacc_locate" | grep -n '\[.*\]')
     accs_line=($(echo $users_info | cut -f1 -d ':'))
     accnames=($(echo $users_info | cut -d '[' -f2 | cut -d ']' -f1))
     unset users_info
   }
 
   local ssh_key_locate="$HOME/.ssh/id_rsa_"  # "./id_rsa_"
-  local gituser_locate="~/.gituser" # "./.gituser"
+  local gitacc_locate="$HOME/.gitacc" # "./.gitacc"
   local GIT_ACC_ARG=()
   local GIT_ACC=()    # git account to 
   local user_name
   local user_mail
-  local accs_line=()  # all the user's tag line that is in the $gituser_locate
-  local accnames=()   # all the accnames that is in the $gituser_locate
+  local accs_line=()  # all the user's tag line that is in the $gitacc_locate
+  local accnames=()   # all the accnames that is in the $gitacc_locate
   local overWrite=0   # is recover old ssh-key
-  local acc_info=()   # single account info
+  local acc_info=()   # single account info, ([tag] name mail private_key publish_key)
   if [ "$#" -gt 0 ]; then
     while [ "$#" -gt 0 ]; do
       case "$1" in
@@ -111,7 +111,6 @@ function git-acc(){
     done
   fi
 
-  
   if [ "${#GIT_ACC_ARG[*]}" -gt 1 ] || [ "${#GIT_ACC_ARG[*]}" -ge 1 -a "${#GIT_ACC[*]}" -ge 1 ]; then
     Echo_Color r 'Wrong: Mutiple Parameters!!\n' # too many input args or accounts 
     return
@@ -125,7 +124,7 @@ function git-acc(){
         for acc_name in ${accnames[*]}; do
           if [ "$acc_name" = "$user_name" ]; then # if is not the match account_name
             Echo_Color r "Warning: Already have same account name."
-            Ask_yn "Do you want to overwrite?" ; overWrite=$?
+            Ask_yn "Do you want to overwrite?"; overWrite=$?
             if [ $overWrite = 0 ]; then
               Echo_Color y "Please use another account name."
               return
@@ -135,10 +134,9 @@ function git-acc(){
 
         # generate ssh-key
         ssh-keygen -t rsa -C "$user_mail" -f "$ssh_key_locate$user_name"
-        if [ $overWrite = 0 ]; then # if recover is not happen, then write it to the $gituser_locate, else nothing change.
-          echo "[$user_name]\n\tname = $user_name\n\temail = $user_mail\n\tprivate_key = $ssh_key_locate$user_name\n\tpublic_key = $ssh_key_locate$user_name.pub" >> "$gituser_locate"
+        if [ $overWrite = 0 ]; then # if recover is not happen, then write it to the $gitacc_locate, else nothing change.
+          echo "[$user_name]\n\tname = $user_name\n\temail = $user_mail\n\tprivate_key = $ssh_key_locate$user_name\n\tpublic_key = $ssh_key_locate$user_name.pub" >> "$gitacc_locate"
         fi
-        source ./.
       ;;
       'rm')
         printf "Enter the git user name you want to remove: "; read user_name
@@ -154,15 +152,14 @@ function git-acc(){
               return
             fi
           else
-            if [ "$i" = "${#accs_line[*]}" ]; then # is the last account in $gituser_locate
-              acc_info=($(sed -n "${accs_line[$i]}, $ p" $gituser_locate | cut -f2 -d"="))
-              sed -i "${accs_line[$i]}, $ d" $gituser_locate
+            if [ "$i" = "${#accs_line[*]}" ]; then # is the last account in $gitacc_locate
+              acc_info=($(sed -n "${accs_line[$i]}, $ p" $gitacc_locate | cut -f2 -d"="))
+              sed -i "${accs_line[$i]}, $ d" $gitacc_locate
             else
-              acc_info=($(sed -n "${accs_line[$i]}, $((${accs_line[$(($i + 1))]} - 1)) p" $gituser_locate | cut -f2 -d"="))
-              sed -i "${accs_line[$i]}, $((${accs_line[$(($i + 1))]} - 1)) d" $gituser_locate
+              acc_info=($(sed -n "${accs_line[$i]}, $((${accs_line[$(($i + 1))]} - 1)) p" $gitacc_locate | cut -f2 -d"="))
+              sed -i "${accs_line[$i]}, $((${accs_line[$(($i + 1))]} - 1)) d" $gitacc_locate
             fi
               rm -rf "${acc_info[-2]}" "${acc_info[-1]}" # remove ssh private & publish keys
-              source ./.
           fi
         done
       ;;
@@ -175,21 +172,33 @@ function git-acc(){
     _acc # read accounts info.
     local i=1 # index of users array
     for acc_name in ${accnames[*]}; do
-      if [ "$acc_name" != "$user_name" ]; then # if is not the match account_name
+      if [ "$acc_name" != "${GIT_ACC[1]}" ]; then # if is not the match account_name
         i=$(($i + 1))
 
         if [ "$i" -gt "${#accs_line[*]}" ]; then # if there isn't a match account_name 
           Echo_Color r "Wrong: account name!!"
-          return
+          break
         fi
       else
-        if [ "$i" = "${#accs_line[*]}" ]; then # is the last account in $gituser_locate
-          acc_info=($(sed -n "${accs_line[$i]}, $ p" $gituser_locate | cut -f2 -d"="))
+        if [ "$i" = "${#accs_line[*]}" ]; then # is the last account in $gitacc_locate
+          acc_info=($(sed -n "${accs_line[$i]}, $ p" $gitacc_locate | cut -f2 -d"="))
         else
-          acc_info=($(sed -n "${accs_line[$i]}, $((${accs_line[$(($i + 1))]} - 1)) p" $gituser_locate | cut -f2 -d"="))
+          acc_info=($(sed -n "${accs_line[$i]}, $((${accs_line[$(($i + 1))]} - 1)) p" $gitacc_locate | cut -f2 -d"="))
+        fi
+
+        if [ "$(echo "$SSH_AUTH_SOCK" | grep 'agent')" != "" ]; then
+          Ask_yn "You already have active git-agent on this shell, you want to overwrite it?"; overWrite=$?
+          if [ $overWrite = 0 ]; then
+            Echo_Color g "Use same ssh-key~"
+            break
+          else
+            ssh-agent -k
+          fi
         fi
           eval `ssh-agent`
-          ssh-add "${accs_line[-2]}" 
+          ssh-add "${acc_info[4]}" # ssh-add private_key
+          git config --global user.name "${acc_info[2]}"  # git global user.name
+          git config --global user.email "${acc_info[3]}" # git global user.email
       fi
     done
   fi
@@ -200,7 +209,7 @@ function git-acc(){
 
 local function _git-acc(){
   local function _acc(){
-    local users_info=$(cat ./.gituser | grep -n '\[.*\]')
+    local users_info=$(cat ./.gitacc | grep -n '\[.*\]')
     local accs_line=$(echo $users_info | cut -f1 -d ':')
     local accnames=$(echo $users_info | cut -d '[' -f2 | cut -d ']' -f1)
     echo "${accnames[*]}" | tr ' ' '\n'
