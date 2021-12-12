@@ -69,10 +69,8 @@ function git-acc(){
     unset users_info
   }
 
-  # eval `ssh-agent`
-  # ssh-add "~/.ssh/id_rsa_$acc_name"
-  local ssh_key_locate="./id_rsa_" #"$HOME/.ssh/id_rsa_"
-  local gituser_locate="./.gituser" #"~/.gituser"
+  local ssh_key_locate="$HOME/.ssh/id_rsa_"  # "./id_rsa_"
+  local gituser_locate="~/.gituser" # "./.gituser"
   local GIT_ACC_ARG=()
   local GIT_ACC=()    # git account to 
   local user_name
@@ -178,7 +176,7 @@ function git-acc(){
     local i=1 # index of users array
     for acc_name in ${accnames[*]}; do
       if [ "$acc_name" != "$user_name" ]; then # if is not the match account_name
-        i=$(( $i + 1))
+        i=$(($i + 1))
 
         if [ "$i" -gt "${#accs_line[*]}" ]; then # if there isn't a match account_name 
           Echo_Color r "Wrong: account name!!"
@@ -204,17 +202,32 @@ local function _git-acc(){
   local function _acc(){
     local users_info=$(cat ./.gituser | grep -n '\[.*\]')
     local accs_line=$(echo $users_info | cut -f1 -d ':')
-    local accnames=$(echo $users_info | cut -d '[' -f2 | cut -d ']' -f1) 
+    local accnames=$(echo $users_info | cut -d '[' -f2 | cut -d ']' -f1)
     echo "${accnames[*]}" | tr ' ' '\n'
-    # unset users_info accs_line accnames
+    unset users_info accs_line accnames
   }
 
-  if [ "${#COMP_WORDS[*]}" -gt 3 ]; then
+  # refer to https://github.com/iridakos/bash-completion-tutorial/blob/master/dothis-completion.bash
+  if [ "${#COMP_WORDS[*]}" -gt 2 ]; then
     return
   fi
 
-  echo ${COMP_WORDS[*]}
-  _acc; unset _acc
+  local IFS=$' '
+  local suggestions=($(compgen -W "$(_acc)" -- "${COMP_WORDS[1]}"))
+  local i
+  if [ "${#suggestions[@]}" == "1" ]; then
+    local number="${suggestions[0]/%\ */}"
+    COMPREPLY=("$number")
+  else
+    for i in "${!suggestions[@]}"; do
+      suggestions[$i]="$(printf '%*s' "-$COLUMNS"  "${suggestions[$i]}")"
+    done
+
+    COMPREPLY=("${suggestions[@]}")
+  fi
+  unset -f _acc
+  unset -v IFS suggestions i
 }
 
-complete -W "$(_git-acc)" git-acc
+# complete -W "$(_git-acc)" git-acc
+complete -F _git-acc git-acc
