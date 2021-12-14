@@ -29,7 +29,7 @@ OPTIONS
 
 EXAMPLES
 
-  $ git-acc tw-yshuan
+  $ git-acc tw-yshuang
 ```
 
 ### SWITCH ACCOUNT
