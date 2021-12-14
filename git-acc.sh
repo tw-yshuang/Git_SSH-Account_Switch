@@ -57,7 +57,7 @@ function git-acc(){
 
     EXAMPLES
 
-      $ git-acc tw-yshuan
+      $ git-acc tw-yshuang
     '
     echo $help
   }
@@ -87,10 +87,6 @@ function git-acc(){
           show_script_help
           unset -f show_script_help
           return 1
-        ;;
-        '-a'|'--account')
-          GIT_ACC_ARG+='acc'
-          shift 1
         ;;
         # build git_account info. & ssh-key.
         '-add'|'--add_account')
@@ -137,6 +133,10 @@ function git-acc(){
         if [ $overWrite = 0 ]; then # if recover is not happen, then write it to the $gitacc_locate, else nothing change.
           echo "[$user_name]\n\tname = $user_name\n\temail = $user_mail\n\tprivate_key = $ssh_key_locate$user_name\n\tpublic_key = $ssh_key_locate$user_name.pub" >> "$gitacc_locate"
         fi
+
+        Echo_Color g "Your SSH publish key is :"
+        cat "$ssh_key_locate$user_name.pub"
+        Echo_Color g "Paste it to your SSH keys in github or server."
       ;;
       'rm')
         printf "Enter the git user name you want to remove: "; read user_name
