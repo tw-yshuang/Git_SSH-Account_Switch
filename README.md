@@ -37,7 +37,7 @@ When you want to use the account that you have already added it, you can type:
 ```shell
 $ git-acc <tab>
 ```
-Then it will come out the current account that registers in the git-acc to let you choose, e.g.
+Then it will come out the current account that registers in the `git-acc` to let you choose, e.g.
 ```shell
 $ git-acc <tab>
 tw-yshuang cool-name ...
