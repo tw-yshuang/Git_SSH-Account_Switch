@@ -209,7 +209,7 @@ function git-acc(){
 
 local function _git-acc(){
   local function _acc(){
-    local users_info=$(cat ./.gitacc | grep -n '\[.*\]')
+    local users_info=$(cat $HOME/.gitacc | grep -n '\[.*\]')
     local accs_line=$(echo $users_info | cut -f1 -d ':')
     local accnames=$(echo $users_info | cut -d '[' -f2 | cut -d ']' -f1)
     echo "${accnames[*]}" | tr ' ' '\n'
