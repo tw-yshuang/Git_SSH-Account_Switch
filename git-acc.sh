@@ -69,7 +69,7 @@ function git-acc(){
     unset users_info
   }
 
-  local ssh_key_locate="$HOME/.ssh/id_rsa_"  # "./id_rsa_"
+  local ssh_key_locate="$HOME/.ssh/id_ed25519_"  # "./id_ed25519_"
   local gitacc_locate="$HOME/.gitacc" # "./.gitacc"
   local GIT_ACC_ARG=()
   local GIT_ACC=()    # git account to 
@@ -129,7 +129,7 @@ function git-acc(){
         done
 
         # generate ssh-key
-        ssh-keygen -t rsa -C "$user_mail" -f "$ssh_key_locate$user_name"
+        ssh-keygen -t ed25519 -C "$user_mail" -f "$ssh_key_locate$user_name"
         if [ $overWrite = 0 ]; then # if recover is not happen, then write it to the $gitacc_locate, else nothing change.
           echo "[$user_name]\n\tname = $user_name\n\temail = $user_mail\n\tprivate_key = $ssh_key_locate$user_name\n\tpublic_key = $ssh_key_locate$user_name.pub" >> "$gitacc_locate"
         fi
