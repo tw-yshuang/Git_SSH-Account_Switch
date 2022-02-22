@@ -10,7 +10,7 @@ case $SHELL in
     logout_profile=~/.bash_logout
     ;;
     * )
-    Echo_Color r "Unknow shell, need to manually add pyenv config on your shell profile!!"
+    Echo_Color r "Unknown shell, need to manually add pyenv config on your shell profile!!"
     ;;
 esac
 
