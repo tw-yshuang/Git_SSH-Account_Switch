@@ -107,6 +107,11 @@ function git-acc(){
           GIT_ACC_ARG+='rm'
           shift 1
         ;;
+        '-out'|'--logout')
+          ssh-agent -k
+          unset SSH_AUTH_SOCK SSH_AGENT_PID
+          shift 1
+        ;;
         # use which account to access.
         * )
           GIT_ACC+=$1
@@ -230,7 +235,6 @@ local function _git-acc(){
     return
   fi
 
-  local IFS=$' '
   local suggestions=($(compgen -W "$(_acc)" -- "${COMP_WORDS[1]}"))
   local i
   if [ "${#suggestions[@]}" == "1" ]; then
@@ -244,7 +248,7 @@ local function _git-acc(){
     COMPREPLY=("${suggestions[@]}")
   fi
   unset -f _acc
-  unset -v IFS suggestions i
+  unset -v suggestions i
 }
 
 # complete -W "$(_git-acc)" git-acc
