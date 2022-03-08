@@ -52,6 +52,8 @@ function git-acc(){
       [account]               use which accounts on this shell, type the account name that you register.
       -h, --help              print help information.
       -add, --add_account     build git_account info. & ssh-key.
+          -t, --type          ssh-key types, follow `ssh-keygen` role, 
+                              types: dsa | ecdsa | ecdsa-sk | ed25519 | ed25519-sk | rsa(default)
       -rm, --remove_account   remove git_account info. & ssh-key from this device
 
 
@@ -69,12 +71,14 @@ function git-acc(){
     unset users_info
   }
 
-  local ssh_key_locate="$HOME/.ssh/id_rsa_"  # "./id_rsa_"
+  local ssh_key_locate="$HOME/.ssh/id_"  # "./id_rsa_"
   local gitacc_locate="$HOME/.gitacc" # "./.gitacc"
+  local ssh_keygen_type="rsa"
   local GIT_ACC_ARG=()
   local GIT_ACC=()    # git account to 
   local user_name
   local user_mail
+  local key_type
   local accs_line=()  # all the user's tag line that is in the $gitacc_locate
   local accnames=()   # all the accnames that is in the $gitacc_locate
   local overWrite=0   # is recover old ssh-key
@@ -92,6 +96,11 @@ function git-acc(){
         '-add'|'--add_account')
           GIT_ACC_ARG+='add'
           shift 1
+        ;;
+        # ssh-key type
+        '-t'|'--type')
+          ssh_keygen_type=$2
+          shift 2
         ;;
         # remove git_account info. & ssh-key from this device
         '-rm'|'--remove_account')
@@ -128,8 +137,8 @@ function git-acc(){
           fi
         done
 
-        # generate ssh-key
-        ssh-keygen -t rsa -C "$user_mail" -f "$ssh_key_locate$user_name"
+        ssh_key_locate="$ssh_key_locate${ssh_keygen_type}_"
+        ssh-keygen -t $ssh_keygen_type -C "$user_mail" -f "$ssh_key_locate$user_name"
         if [ $overWrite = 0 ]; then # if recover is not happen, then write it to the $gitacc_locate, else nothing change.
           echo "[$user_name]\n\tname = $user_name\n\temail = $user_mail\n\tprivate_key = $ssh_key_locate$user_name\n\tpublic_key = $ssh_key_locate$user_name.pub" >> "$gitacc_locate"
         fi
@@ -154,10 +163,10 @@ function git-acc(){
           else
             if [ "$i" = "${#accs_line[*]}" ]; then # is the last account in $gitacc_locate
               acc_info=($(sed -n "${accs_line[$i]}, $ p" $gitacc_locate | cut -f2 -d"="))
-              sed -i "${accs_line[$i]}, $ d" $gitacc_locate
+              vi +"${accs_line[$i]}, $ d" +wq $gitacc_locate
             else
               acc_info=($(sed -n "${accs_line[$i]}, $((${accs_line[$(($i + 1))]} - 1)) p" $gitacc_locate | cut -f2 -d"="))
-              sed -i "${accs_line[$i]}, $((${accs_line[$(($i + 1))]} - 1)) d" $gitacc_locate
+              vi +"${accs_line[$i]}, $((${accs_line[$(($i + 1))]} - 1)) d" +wq $gitacc_locate
             fi
               rm -rf "${acc_info[-2]}" "${acc_info[-1]}" # remove ssh private & publish keys
           fi
