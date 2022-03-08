@@ -52,9 +52,10 @@ function git-acc(){
       [account]               use which accounts on this shell, type the account name that you register.
       -h, --help              print help information.
       -add, --add_account     build git_account info. & ssh-key.
-          -t, --type          ssh-key types, follow `ssh-keygen` role, 
+          -t, --type          ssh-key types, follow `ssh-keygen` rule, 
                               types: dsa | ecdsa | ecdsa-sk | ed25519 | ed25519-sk | rsa(default)
       -rm, --remove_account   remove git_account info. & ssh-key from this device
+      -out, --logout          logout your current ssh-acc.
 
 
     EXAMPLES

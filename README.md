@@ -24,7 +24,10 @@ OPTIONS
   [account]               use which accounts on this shell, type the account name that you register.
   -h, --help              print help information.
   -add, --add_account     build git_account info. & ssh-key.
+      -t, --type          ssh-key types, follow `ssh-keygen` rule, 
+                          types: dsa | ecdsa | ecdsa-sk | ed25519 | ed25519-sk | rsa(default)
   -rm, --remove_account   remove git_account info. & ssh-key from this device
+  -out, --logout          logout your current ssh-acc.
 
 
 EXAMPLES
@@ -58,6 +61,16 @@ After that, `git-acc` will generate `id_rsa_<acc_name>`, `id_rsa_<acc_name>.pub`
 Next, you can type `$ git-acc <acc_name>`, to login your account.\
 NOTE: You also can overwrite your account.
 
+#### **CHOOSE YOUR SSH-KEY TYPE**
+If you do not want to use `rsa` type to create your ssh-key, you can use this:
+```shell
+$ git-acc -add -t <key-type>
+    or
+$ git-acc -add --type <key-type>
+```
+This args is following `ssh-keygen -t` rule, you can type corresponding key type you wnat! \
+Types: `dsa | ecdsa | ecdsa-sk | ed25519 | ed25519-sk | rsa(default)`
+
 ### REMOVE
 ```shell
 $ git-acc -rm
@@ -68,3 +81,11 @@ It will ask you to type:
 ```shell
 Enter the git user name you want to remove: <acc_name>
 ```
+
+### LOGOUT
+```shell
+$ git-acc -out
+    or
+$ git-acc --logout    
+```
+Logout your ssh-acc perfectly at CLI mode.
