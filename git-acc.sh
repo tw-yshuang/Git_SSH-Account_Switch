@@ -111,6 +111,8 @@ function git-acc(){
         '-out'|'--logout')
           ssh-agent -k
           unset SSH_AUTH_SOCK SSH_AGENT_PID
+          git config --global --unset user.name
+          git config --global --unset user.email
           shift 1
         ;;
         # use which account to access.
