@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
 function git-acc(){
   local function Echo_Color(){
@@ -238,6 +238,7 @@ local function _git-acc(){
     return
   fi
 
+  local IFS=$' ' # keyword space
   local suggestions=($(compgen -W "$(_acc)" -- "${COMP_WORDS[1]}"))
   local i
   if [ "${#suggestions[@]}" == "1" ]; then
@@ -251,7 +252,7 @@ local function _git-acc(){
     COMPREPLY=("${suggestions[@]}")
   fi
   unset -f _acc
-  unset -v suggestions i
+  unset -v IFS suggestions i
 }
 
 # complete -W "$(_git-acc)" git-acc
