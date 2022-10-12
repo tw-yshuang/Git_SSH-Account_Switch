@@ -11,5 +11,5 @@ match=$(grep -nF $gitacc_config ~/.zshrc | cut -f1 -d:)
 vi +"$(echo $match | head -n1),$(echo $match | tail -n1)d" +wq ~/.zlogout
 
 # remove .git-acc .gitacc
-rm .git-acc
-rm .gitacc
+rm ~/.git-acc
+rm ~/.gitacc
