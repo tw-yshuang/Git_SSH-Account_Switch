@@ -1,23 +1,24 @@
 #!/usr/bin/env bash
+
 function Echo_Color(){
     case $1 in
         r* | R* )
-        COLOR='\e[31m'
+        COLOR='\033[0;31m'
         ;;
         g* | G* )
-        COLOR='\e[32m'
+        COLOR='\033[0;32m'
         ;;
         y* | Y* )
-        COLOR='\e[33m'
+        COLOR='\033[0;33m'
         ;;
         b* | B* )
-        COLOR='\e[34m'
+        COLOR='\033[0;34m'
         ;;
         *)
-        echo "$COLOR Wrong COLOR keyword!\e[0m" 
+        echo "$COLOR Wrong COLOR keyword!\033[0m" 
         ;;
         esac
-        echo -e "$COLOR$2\e[0m"
+        echo -e "$COLOR$2\033[0m"
     }
 
 case $SHELL in
@@ -30,7 +31,9 @@ case $SHELL in
     logout_profile=~/.bash_logout
     ;;
     * )
-    Echo_Color r "Unknown shell, need to manually add pyenv config on your shell profile!!"
+    Echo_Color r "Unknown shell, need to manually add config on your shell profile!!"
+    profile='unknown'
+    logout_profile='unknown'
     ;;
 esac
 
@@ -39,12 +42,23 @@ source $HOME/.git-acc'
 
 cp ./git-acc.sh ~/.git-acc
 
-if [ "$(grep -xn "$gitacc_config" $profile)" != "" ]; then
-    Echo_Color g "You have already added git-acc config in $profile !!\nOnly update your git-acc!"
+if [ "$profile" = "unknown" ]; then
+    echo 'Paste the information down below to your profile:'
+    Echo_Color y "$gitacc_config\n"
+    
+    echo 'Paste the information down below to your profile:'
+    Echo_Color y "$(cat ./logout.script)\n"
 else
+    if [ "$(grep -xn "$gitacc_config" $profile)" != "" ]; then
+        Echo_Color g "You have already added git-acc config in $profile !!\nOnly update your git-acc!"
+    else
+        printf "$gitacc_config\n" >> $profile
+        echo "$(cat ./logout.script)" >> $logout_profile
+    fi
+fi
+
+if ! [ -f ~/.gitacc ]; then
     printf "" >> ~/.gitacc
-    printf "$gitacc_config\n" >> $profile
-    echo "$(cat ./logout.script)" >> $logout_profile
 fi
 
 source $HOME/.git-acc
