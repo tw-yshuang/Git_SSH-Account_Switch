@@ -16,7 +16,7 @@ function git-acc(){
       COLOR='\e[34m'
       ;;
       *)
-      echo "$COLOR Wrong COLOR keyword!\e[0m" 
+      echo "$COLOR Wrong COLOR keyword!\e[0m"
       ;;
     esac
     echo -e "$COLOR$2\e[0m"
@@ -52,8 +52,8 @@ function git-acc(){
       [account]               use which accounts on this shell, type the account name that you register.
       -h, --help              print help information.
       -add, --add_account     build git_account info. & ssh-key.
-          -t, --type          ssh-key types, follow `ssh-keygen` rule, 
-                              types: dsa | ecdsa | ecdsa-sk | ed25519 | ed25519-sk | rsa(default)
+          -t, --type          ssh-key types, follow `ssh-keygen` rule,
+                              types: dsa | ecdsa | ecdsa-sk | ed25519(deafult) | ed25519-sk | rsa
       -rm, --remove_account   remove git_account info. & ssh-key from this device
       -out, --logout          logout your current ssh-acc.
 
@@ -74,11 +74,12 @@ function git-acc(){
 
   local ssh_key_locate="$HOME/.ssh/id_"  # "./id_rsa_"
   local gitacc_locate="$HOME/.gitacc" # "./.gitacc"
-  local ssh_keygen_type="rsa"
+  local ssh_keygen_type="ed25519"
   local GIT_ACC_ARG=()
-  local GIT_ACC=()    # git account to 
+  local GIT_ACC=()    # git account to
   local user_name
   local user_mail
+  local account_alias
   local key_type
   local accs_line=()  # all the user's tag line that is in the $gitacc_locate
   local accnames=()   # all the accnames that is in the $gitacc_locate
@@ -125,17 +126,18 @@ function git-acc(){
   fi
 
   if [ "${#GIT_ACC_ARG[*]}" -gt 1 ] || [ "${#GIT_ACC_ARG[*]}" -ge 1 -a "${#GIT_ACC[*]}" -ge 1 ]; then
-    Echo_Color r 'Wrong: Mutiple Parameters!!\n' # too many input args or accounts 
+    Echo_Color r 'Wrong: Mutiple Parameters!!\n' # too many input args or accounts
     return
   else
     case "${GIT_ACC_ARG[*]}" in
       'add')
         printf "Enter your git user name: "; read user_name
         printf "Enter your git user mail: "; read user_mail
+        printf "Enter alias for this account: "; read account_alias
 
         _acc # read accounts info.
         for acc_name in ${accnames[*]}; do
-          if [ "$acc_name" = "$user_name" ]; then # if is not the match account_name
+          if [ "$acc_name" = "$account_alias" ]; then # if is not the match account_name
             Echo_Color r "Warning: Already have same account name."
             Ask_yn "Do you want to overwrite?"; overWrite=$?
             if [ $overWrite = 0 ]; then
@@ -146,25 +148,25 @@ function git-acc(){
         done
 
         ssh_key_locate="$ssh_key_locate${ssh_keygen_type}_"
-        ssh-keygen -t $ssh_keygen_type -C "$user_mail" -f "$ssh_key_locate$user_name"
+        ssh-keygen -t $ssh_keygen_type -C "$user_mail" -f "$ssh_key_locate$account_alias"
         if [ $overWrite = 0 ]; then # if recover is not happen, then write it to the $gitacc_locate, else nothing change.
-          echo "[$user_name]\n\tname = $user_name\n\temail = $user_mail\n\tprivate_key = $ssh_key_locate$user_name\n\tpublic_key = $ssh_key_locate$user_name.pub" >> "$gitacc_locate"
+          echo "[$account_alias]\n\tname = $user_name\n\temail = $user_mail\n\tprivate_key = $ssh_key_locate$account_alias\n\tpublic_key = $ssh_key_locate$account_alias.pub" >> "$gitacc_locate"
         fi
 
         Echo_Color g "Your SSH publish key is :"
-        cat "$ssh_key_locate$user_name.pub"
+        cat "$ssh_key_locate$account_alias.pub"
         Echo_Color g "Paste it to your SSH keys in github or server."
       ;;
       'rm')
-        printf "Enter the git user name you want to remove: "; read user_name
-        
+        printf "Enter the alias of account you want to remove: "; read account_alias
+
         _acc # read accounts info.
         local i=1 # index of users array
         for acc_name in ${accnames[*]}; do
-          if [ "$acc_name" != "$user_name" ]; then # if is not the match account_name
+          if [ "$acc_name" != "$account_alias" ]; then # if is not the match account_name
             i=$(( $i + 1))
 
-            if [ "$i" -gt "${#accs_line[*]}" ]; then # if there isn't a match account_name 
+            if [ "$i" -gt "${#accs_line[*]}" ]; then # if there isn't a match account_name
               Echo_Color r "Wrong: account name!!"
               return
             fi
@@ -184,7 +186,7 @@ function git-acc(){
   fi
 
   if [ "${#GIT_ACC[*]}" -gt 1 ]; then
-    Echo_Color r 'Wrong: Mutiple Parameters!!\n' # too many input args or accounts 
+    Echo_Color r 'Wrong: Mutiple Parameters!!\n' # too many input args or accounts
   elif [ "${#GIT_ACC[*]}" = 1 ]; then
     _acc # read accounts info.
     local i=1 # index of users array
@@ -192,7 +194,7 @@ function git-acc(){
       if [ "$acc_name" != "${GIT_ACC[1]}" ]; then # if is not the match account_name
         i=$(($i + 1))
 
-        if [ "$i" -gt "${#accs_line[*]}" ]; then # if there isn't a match account_name 
+        if [ "$i" -gt "${#accs_line[*]}" ]; then # if there isn't a match account_name
           Echo_Color r "Wrong: account name!!"
           break
         fi
@@ -221,12 +223,12 @@ function git-acc(){
   fi
 
   unset -f Echo_Color Ask_yn _acc
-  unset -v GIT_ACC_ARG GIT_ACC user_name user_mail users_info cut_accs_line cut_username overWrite acc_info
+  unset -v GIT_ACC_ARG GIT_ACC user_name user_mail account_alias users_info cut_accs_line cut_username overWrite acc_info
 }
 
 local function _git-acc(){
   local function _acc(){
-    local users_info=$(cat $HOME/.gitacc | grep -n '\[.*\]')
+    local users_info=$(cat $HOME/.gitacc | grep -n '\[*\]')
     local accs_line=$(echo $users_info | cut -f1 -d ':')
     local accnames=$(echo $users_info | cut -d '[' -f2 | cut -d ']' -f1)
     echo "${accnames[*]}" | tr ' ' '\n'

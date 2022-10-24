@@ -25,8 +25,8 @@ OPTIONS
   [account]               use which accounts on this shell, type the account name that you register.
   -h, --help              print help information.
   -add, --add_account     build git_account info. & ssh-key.
-      -t, --type          ssh-key types, follow `ssh-keygen` rule, 
-                          types: dsa | ecdsa | ecdsa-sk | ed25519 | ed25519-sk | rsa(default)
+      -t, --type          ssh-key types, follow `ssh-keygen` rule,
+                          types: dsa | ecdsa | ecdsa-sk | ed25519(default) | ed25519-sk | rsa
   -rm, --remove_account   remove git_account info. & ssh-key from this device
   -out, --logout          logout your current ssh-acc.
 
@@ -57,6 +57,7 @@ It will ask you to type:
 ```shell
 Enter your git user name: <acc_name>
 Enter your git user mail: <acc_mail>
+Enter alias for this account: <acc_alias>
 ```
 After that, `git-acc` will generate `id_rsa_<acc_name>`, `id_rsa_<acc_name>.pub` in the `$HOME/.ssh`. \
 Next, you can type `$ git-acc <acc_name>`, to login your account.\
@@ -80,7 +81,7 @@ $ git-acc --remove_account
 ```
 It will ask you to type:
 ```shell
-Enter the git user name you want to remove: <acc_name>
+Enter the alias of account you want to remove: <acc_alias>
 ```
 
 ### LOGOUT
