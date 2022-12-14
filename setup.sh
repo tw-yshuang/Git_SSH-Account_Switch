@@ -61,5 +61,5 @@ if ! [ -f ~/.gitacc ]; then
     printf "" >> ~/.gitacc
 fi
 
-source $HOME/.git-acc
+exec $SHELL
 echo "Done!! Now can use! Enjoy~~~"
