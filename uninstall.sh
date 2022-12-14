@@ -8,7 +8,7 @@ vi +"$(echo $match | head -n1),$(echo $match | tail -n1)d" +wq ~/.zlogout
 gitacc_config='# git account switch
 source $HOME/.git-acc'
 match=$(grep -nF $gitacc_config ~/.zshrc | cut -f1 -d:)
-vi +"$(echo $match | head -n1),$(echo $match | tail -n1)d" +wq ~/.zlogout
+vi +"$(echo $match | head -n1),$(echo $match | tail -n1)d" +wq ~/.zshrc
 
 # remove .git-acc .gitacc
 rm ~/.git-acc
