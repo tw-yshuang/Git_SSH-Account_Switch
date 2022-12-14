@@ -113,3 +113,11 @@ $ git-acc --logout
 ```
 
 Logout your ssh-acc perfectly at CLI mode.
+
+## UNINSTALL
+
+```shell
+$ ./uninstall.sh
+```
+
+After executing this, it will complete removing `git-acc`.
