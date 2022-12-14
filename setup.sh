@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
 function Echo_Color(){
     case $1 in
@@ -61,5 +61,5 @@ if ! [ -f ~/.gitacc ]; then
     printf "" >> ~/.gitacc
 fi
 
-source $HOME/.git-acc
+source $profile
 echo "Done!! Now can use! Enjoy~~~"
