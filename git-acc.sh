@@ -83,7 +83,7 @@ function git-acc(){
   local accs_line=()  # all the user's tag line that is in the $gitacc_locate
   local accnames=()   # all the accnames that is in the $gitacc_locate
   local overWrite=0   # is recover old ssh-key
-  local acc_info=()   # single account info, ([tag] name mail private_key publish_key)
+  local acc_info=()   # single account info, ([tag] name mail private_key public_key)
   if [ "$#" -gt 0 ]; then
     while [ "$#" -gt 0 ]; do
       case "$1" in
@@ -151,7 +151,7 @@ function git-acc(){
           echo "[$user_name]\n\tname = $user_name\n\temail = $user_mail\n\tprivate_key = $ssh_key_locate$user_name\n\tpublic_key = $ssh_key_locate$user_name.pub" >> "$gitacc_locate"
         fi
 
-        Echo_Color g "Your SSH publish key is :"
+        Echo_Color g "Your SSH public key is :"
         cat "$ssh_key_locate$user_name.pub"
         Echo_Color g "Paste it to your SSH keys in github or server."
       ;;
@@ -176,7 +176,7 @@ function git-acc(){
               acc_info=($(sed -n "${accs_line[$i]}, $((${accs_line[$(($i + 1))]} - 1)) p" $gitacc_locate | cut -f2 -d"="))
               vi +"${accs_line[$i]}, $((${accs_line[$(($i + 1))]} - 1)) d" +wq $gitacc_locate
             fi
-              rm -rf "${acc_info[-2]}" "${acc_info[-1]}" # remove ssh private & publish keys
+              rm -rf "${acc_info[-2]}" "${acc_info[-1]}" # remove ssh private & public keys
           fi
         done
       ;;
