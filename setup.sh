@@ -52,7 +52,7 @@ else
     if [ "$(grep -xn "$gitacc_config" $profile)" != "" ]; then
         Echo_Color g "You have already added git-acc config in $profile !!\nOnly update your git-acc!"
     else
-        printf "$gitacc_config\n" >> $profile
+        printf "\n$gitacc_config\n" >> $profile
         echo "$(cat ./logout.script)" >> $logout_profile
     fi
 fi
