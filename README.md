@@ -7,7 +7,7 @@ A CLI tool can switch ssh account to your current shell. You will easily switch 
 ## Installation
 
 ```shell
-$ bash ./setup.sh
+$ zsh ./setup.sh
 ```
 
 it will add some code in your `profile` & `$logout_profile`, and setup `git-acc` & `.gitacc` on the `$HOME`. \
