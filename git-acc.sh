@@ -175,10 +175,20 @@ function git-acc(){
         cat "$ssh_key_locate$user_name.pub"
         Echo_Color g "Paste it to your SSH keys in github or server."
       ;;
-       'rm')
-         printf "Enter the git user name you want to remove: "; read user_name
-         
-         _acc # read accounts info.
+        'rm')
+          printf "Enter the git user name you want to remove: "; read user_name
+          
+          # Check if removing the default account
+          if [ -f "$gitacc_locate" ]; then
+            local current_default=$(grep -A1 '^\[DEFAULT\]' "$gitacc_locate" | grep 'account' | cut -d'=' -f2 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+            if [ "$current_default" = "$user_name" ]; then
+              # Remove DEFAULT section when removing the default account
+              sed -i.bak '/^\[DEFAULT\]/,/^$/d' "$gitacc_locate" 2>/dev/null
+              rm -f "$gitacc_locate.bak" 2>/dev/null
+            fi
+          fi
+          
+          _acc # read accounts info.
          local i=1 # index of users array
          for acc_name in ${accnames[*]}; do
            if [ "$acc_name" != "$user_name" ]; then # if is not the match account_name
