@@ -36,11 +36,17 @@ OPTIONS
                           types: dsa | ecdsa | ecdsa-sk | ed25519 | ed25519-sk | rsa(default)
   -rm, --remove_account   remove git_account info. & ssh-key from this device
   -out, --logout          logout your current ssh-acc.
+  -set, --set-default     set a default account that auto-loads on shell startup
+  -show, --show-default   display the current default account
+  -unset, --unset-default remove the default account configuration
 
 
 EXAMPLES
 
   $ git-acc tw-yshuang
+  $ git-acc -set tw-yshuang
+  $ git-acc -show
+  $ git-acc -unset
 ```
 
 ### SWITCH ACCOUNT
@@ -113,3 +119,46 @@ $ git-acc --logout
 ```
 
 Logout your ssh-acc perfectly at CLI mode.
+
+### DEFAULT ACCOUNT
+
+Set a default account that automatically loads when you open a new shell.
+
+#### Set Default
+
+```shell
+$ git-acc -set tw-yshuang
+    or
+$ git-acc --set-default tw-yshuang
+```
+
+Set an existing account as the default. The default account will be automatically loaded on your next shell startup.
+
+#### Show Current Default
+
+```shell
+$ git-acc -show
+    or
+$ git-acc --show-default
+```
+
+Display the name of the currently configured default account.
+
+#### Remove Default
+
+```shell
+$ git-acc -unset
+    or
+$ git-acc --unset-default
+```
+
+Remove the default account configuration. Auto-load will be disabled.
+
+#### Auto-load Behavior
+
+When you have a default account configured, it will automatically activate when you open a new shell session. This means:
+- The SSH agent will start automatically
+- Your git user.name and user.email will be configured
+- You can immediately start using git without manually running `git-acc <account>`
+
+To disable auto-load, simply unset the default account or remove the `[DEFAULT]` section from your `~/.gitacc` file.
