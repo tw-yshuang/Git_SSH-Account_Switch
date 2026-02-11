@@ -56,17 +56,19 @@ function git-acc(){
                                types: dsa | ecdsa | ecdsa-sk | ed25519 | ed25519-sk | rsa(default)
        -rm, --remove_account   remove git_account info. & ssh-key from this device
        -out, --logout          logout your current ssh-acc.
-       -set, --set-default     set a default account (must be an existing account).
-       -show, --show-default   display the current default account.
-       -unset, --unset-default remove the default account configuration.
+       -ls, --list             list all registered accounts with their emails.
+       --set-default           set a default account (must be an existing account).
+       --show-default          display the current default account.
+       --unset-default         remove the default account configuration.
 
 
      EXAMPLES
 
        $ git-acc tw-yshuang
-       $ git-acc -set tw-yshuang
-       $ git-acc -show
-       $ git-acc -unset
+       $ git-acc -ls
+       $ git-acc --set-default tw-yshuang
+       $ git-acc --show-default
+       $ git-acc --unset-default
      '
      echo $help
    }
@@ -122,16 +124,25 @@ function git-acc(){
            git config --global --unset user.email
            shift 1
          ;;
-          '-set'|'--set-default')
+         '-ls'|'--list')
+           GIT_ACC_ARG+='list'
+           shift 1
+         ;;
+          '--set-default')
             GIT_ACC_ARG+='set_default'
-            default_account_name=$2
-            shift 2
+            if [ -n "$2" ] && [[ "$2" != -* ]]; then
+              default_account_name=$2
+              shift 2
+            else
+              Echo_Color r "Wrong: --set-default requires an account name.\n"
+              return
+            fi
           ;;
-         '-show'|'--show-default')
+         '--show-default')
            GIT_ACC_ARG+='show_default'
            shift 1
          ;;
-         '-unset'|'--unset-default')
+         '--unset-default')
            GIT_ACC_ARG+='unset_default'
            shift 1
          ;;
@@ -251,6 +262,36 @@ function git-acc(){
            rm -f "$gitacc_locate.bak" 2>/dev/null
            Echo_Color g "Default account removed."
          fi
+       ;;
+       'list')
+         if [ ! -f "$gitacc_locate" ]; then
+           Echo_Color r "No accounts registered yet."
+           return
+         fi
+         
+         _acc # read accounts info
+         
+         if [ "${#accnames[*]}" -eq 0 ]; then
+           Echo_Color r "No accounts found."
+           return
+         fi
+         
+         Echo_Color g "Registered Git Accounts:\n"
+         
+         local i=1
+         for acc_name in ${accnames[*]}; do
+           # Extract email for this account
+           if [ "$i" = "${#accs_line[*]}" ]; then
+             # Last account
+             local email=$(sed -n "${accs_line[$i]}, $ p" "$gitacc_locate" | grep 'email' | cut -f2 -d"=" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+           else
+             # Not last account
+             local email=$(sed -n "${accs_line[$i]}, $((${accs_line[$(($i + 1))]} - 1)) p" "$gitacc_locate" | grep 'email' | cut -f2 -d"=" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+           fi
+           
+           printf "  - %-20s (%s)\n" "$acc_name" "$email"
+           i=$(($i + 1))
+         done
        ;;
      esac
    fi

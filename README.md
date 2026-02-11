@@ -36,17 +36,19 @@ OPTIONS
                           types: dsa | ecdsa | ecdsa-sk | ed25519 | ed25519-sk | rsa(default)
   -rm, --remove_account   remove git_account info. & ssh-key from this device
   -out, --logout          logout your current ssh-acc.
-  -set, --set-default     set a default account that auto-loads on shell startup
-  -show, --show-default   display the current default account
-  -unset, --unset-default remove the default account configuration
+  -ls, --list             list all registered accounts with their emails.
+  --set-default           set a default account that auto-loads on shell startup
+  --show-default          display the current default account
+  --unset-default         remove the default account configuration
 
 
 EXAMPLES
 
   $ git-acc tw-yshuang
-  $ git-acc -set tw-yshuang
-  $ git-acc -show
-  $ git-acc -unset
+  $ git-acc -ls
+  $ git-acc --set-default tw-yshuang
+  $ git-acc --show-default
+  $ git-acc --unset-default
 ```
 
 ### SWITCH ACCOUNT
@@ -120,6 +122,25 @@ $ git-acc --logout
 
 Logout your ssh-acc perfectly at CLI mode.
 
+### LIST
+
+```shell
+$ git-acc -ls
+    or
+$ git-acc --list
+```
+
+Display all registered accounts with their email addresses. This helps you see which accounts are available for switching.
+
+Example output:
+```
+Registered Git Accounts:
+
+  - tw-yshuang         (tw.yshuang@gmail.com)
+  - work-account       (user@company.com)
+  - personal           (personal@email.com)
+```
+
 ### DEFAULT ACCOUNT
 
 Set a default account that automatically loads when you open a new shell.
@@ -127,8 +148,6 @@ Set a default account that automatically loads when you open a new shell.
 #### Set Default
 
 ```shell
-$ git-acc -set tw-yshuang
-    or
 $ git-acc --set-default tw-yshuang
 ```
 
@@ -137,8 +156,6 @@ Set an existing account as the default. The default account will be automaticall
 #### Show Current Default
 
 ```shell
-$ git-acc -show
-    or
 $ git-acc --show-default
 ```
 
@@ -147,8 +164,6 @@ Display the name of the currently configured default account.
 #### Remove Default
 
 ```shell
-$ git-acc -unset
-    or
 $ git-acc --unset-default
 ```
 
