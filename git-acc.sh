@@ -78,18 +78,19 @@ function git-acc(){
     unset users_info
   }
 
-  local ssh_key_locate="$HOME/.ssh/id_"  # "./id_rsa_"
-  local gitacc_locate="$HOME/.gitacc" # "./.gitacc"
-  local ssh_keygen_type="rsa"
-  local GIT_ACC_ARG=()
-  local GIT_ACC=()    # git account to 
-  local user_name
-  local user_mail
-  local key_type
-  local accs_line=()  # all the user's tag line that is in the $gitacc_locate
-  local accnames=()   # all the accnames that is in the $gitacc_locate
-  local overWrite=0   # is recover old ssh-key
-  local acc_info=()   # single account info, ([tag] name mail private_key publish_key)
+   local ssh_key_locate="$HOME/.ssh/id_"  # "./id_rsa_"
+   local gitacc_locate="$HOME/.gitacc" # "./.gitacc"
+   local ssh_keygen_type="rsa"
+   local GIT_ACC_ARG=()
+   local GIT_ACC=()    # git account to 
+   local user_name
+   local user_mail
+   local key_type
+   local accs_line=()  # all the user's tag line that is in the $gitacc_locate
+   local accnames=()   # all the accnames that is in the $gitacc_locate
+   local overWrite=0   # is recover old ssh-key
+   local acc_info=()   # single account info, ([tag] name mail private_key publish_key)
+   local default_account_name=""
   if [ "$#" -gt 0 ]; then
     while [ "$#" -gt 0 ]; do
       case "$1" in
@@ -121,10 +122,11 @@ function git-acc(){
            git config --global --unset user.email
            shift 1
          ;;
-         '-set'|'--set-default')
-           GIT_ACC_ARG+='set_default'
-           shift 1
-         ;;
+          '-set'|'--set-default')
+            GIT_ACC_ARG+='set_default'
+            default_account_name=$2
+            shift 2
+          ;;
          '-show'|'--show-default')
            GIT_ACC_ARG+='show_default'
            shift 1
@@ -198,12 +200,12 @@ function git-acc(){
            fi
          done
        ;;
-       'set_default')
-         if [ "$#" -gt 0 ]; then
-           user_name=$1
-         else
-           printf "Enter the account name to set as default: "; read user_name
-         fi
+        'set_default')
+          if [ -n "$default_account_name" ]; then
+            user_name=$default_account_name
+          else
+            printf "Enter the account name to set as default: "; read user_name
+          fi
 
          _acc # read accounts info.
          local account_found=0
