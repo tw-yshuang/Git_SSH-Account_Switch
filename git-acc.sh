@@ -37,53 +37,62 @@ function git-acc(){
       unset respond
   }
 
-  local function show_script_help(){
-      local help='
-            +---------------+
-            |    git-acc    |
-            +---------------+
+   local function show_script_help(){
+       local help='
+             +---------------+
+             |    git-acc    |
+             +---------------+
 
-    SYNOPSIS
+     SYNOPSIS
 
-      git-acc [account]|[option]
+       git-acc [account]|[option]
 
-    OPTIONS
+     OPTIONS
 
-      [account]               use which accounts on this shell, type the account name that you register.
-      -h, --help              print help information.
-      -add, --add_account     build git_account info. & ssh-key.
-          -t, --type          ssh-key types, follow `ssh-keygen` rule, 
-                              types: dsa | ecdsa | ecdsa-sk | ed25519 | ed25519-sk | rsa(default)
-      -rm, --remove_account   remove git_account info. & ssh-key from this device
-      -out, --logout          logout your current ssh-acc.
+       [account]               use which accounts on this shell, type the account name that you register.
+       -h, --help              print help information.
+       -add, --add_account     build git_account info. & ssh-key.
+           -t, --type          ssh-key types, follow `ssh-keygen` rule, 
+                               types: dsa | ecdsa | ecdsa-sk | ed25519 | ed25519-sk | rsa(default)
+       -rm, --remove_account   remove git_account info. & ssh-key from this device
+       -out, --logout          logout your current ssh-acc.
+       -ls, --list             list all registered accounts with their emails.
+       --set-default           set a default account (must be an existing account).
+       --show-default          display the current default account.
+       --unset-default         remove the default account configuration.
 
 
-    EXAMPLES
+     EXAMPLES
 
-      $ git-acc tw-yshuang
-    '
-    echo $help
-  }
+       $ git-acc tw-yshuang
+       $ git-acc -ls
+       $ git-acc --set-default tw-yshuang
+       $ git-acc --show-default
+       $ git-acc --unset-default
+     '
+     echo $help
+   }
 
   local function _acc(){
-    local users_info=$(cat "$gitacc_locate" | grep -n '\[.*\]')
+    local users_info=$(cat "$gitacc_locate" | grep -n '\[.*\]' | grep -v '\[DEFAULT\]')
     accs_line=($(echo $users_info | cut -f1 -d ':'))
     accnames=($(echo $users_info | cut -d '[' -f2 | cut -d ']' -f1))
     unset users_info
   }
 
-  local ssh_key_locate="$HOME/.ssh/id_"  # "./id_rsa_"
-  local gitacc_locate="$HOME/.gitacc" # "./.gitacc"
-  local ssh_keygen_type="rsa"
-  local GIT_ACC_ARG=()
-  local GIT_ACC=()    # git account to 
-  local user_name
-  local user_mail
-  local key_type
-  local accs_line=()  # all the user's tag line that is in the $gitacc_locate
-  local accnames=()   # all the accnames that is in the $gitacc_locate
-  local overWrite=0   # is recover old ssh-key
-  local acc_info=()   # single account info, ([tag] name mail private_key publish_key)
+   local ssh_key_locate="$HOME/.ssh/id_"  # "./id_rsa_"
+   local gitacc_locate="$HOME/.gitacc" # "./.gitacc"
+   local ssh_keygen_type="rsa"
+   local GIT_ACC_ARG=()
+   local GIT_ACC=()    # git account to 
+   local user_name
+   local user_mail
+   local key_type
+   local accs_line=()  # all the user's tag line that is in the $gitacc_locate
+   local accnames=()   # all the accnames that is in the $gitacc_locate
+   local overWrite=0   # is recover old ssh-key
+   local acc_info=()   # single account info, ([tag] name mail private_key publish_key)
+   local default_account_name=""
   if [ "$#" -gt 0 ]; then
     while [ "$#" -gt 0 ]; do
       case "$1" in
@@ -109,13 +118,35 @@ function git-acc(){
           shift 1
         ;;
         '-out'|'--logout')
-          ssh-agent -k
-          unset SSH_AUTH_SOCK SSH_AGENT_PID
-          git config --global --unset user.name
-          git config --global --unset user.email
-          shift 1
-        ;;
-        # use which account to access.
+           ssh-agent -k
+           unset SSH_AUTH_SOCK SSH_AGENT_PID
+           git config --global --unset user.name
+           git config --global --unset user.email
+           shift 1
+         ;;
+         '-ls'|'--list')
+           GIT_ACC_ARG+='list'
+           shift 1
+         ;;
+          '--set-default')
+            GIT_ACC_ARG+='set_default'
+            if [ -n "$2" ] && [[ "$2" != -* ]]; then
+              default_account_name=$2
+              shift 2
+            else
+              Echo_Color r "Wrong: --set-default requires an account name.\n"
+              return
+            fi
+          ;;
+         '--show-default')
+           GIT_ACC_ARG+='show_default'
+           shift 1
+         ;;
+         '--unset-default')
+           GIT_ACC_ARG+='unset_default'
+           shift 1
+         ;;
+         # use which account to access.
         * )
           GIT_ACC+=$1
           shift 1
@@ -155,33 +186,115 @@ function git-acc(){
         cat "$ssh_key_locate$user_name.pub"
         Echo_Color g "Paste it to your SSH keys in github or server."
       ;;
-      'rm')
-        printf "Enter the git user name you want to remove: "; read user_name
-        
-        _acc # read accounts info.
-        local i=1 # index of users array
-        for acc_name in ${accnames[*]}; do
-          if [ "$acc_name" != "$user_name" ]; then # if is not the match account_name
-            i=$(( $i + 1))
-
-            if [ "$i" -gt "${#accs_line[*]}" ]; then # if there isn't a match account_name 
-              Echo_Color r "Wrong: account name!!"
-              return
+        'rm')
+          printf "Enter the git user name you want to remove: "; read user_name
+          
+          # Check if removing the default account
+          if [ -f "$gitacc_locate" ]; then
+            local current_default=$(grep -A1 '^\[DEFAULT\]' "$gitacc_locate" | grep 'account' | cut -d'=' -f2 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+            if [ "$current_default" = "$user_name" ]; then
+              # Remove DEFAULT section when removing the default account
+              sed -i.bak '/^\[DEFAULT\]/,/^$/d' "$gitacc_locate" 2>/dev/null
+              rm -f "$gitacc_locate.bak" 2>/dev/null
             fi
-          else
-            if [ "$i" = "${#accs_line[*]}" ]; then # is the last account in $gitacc_locate
-              acc_info=($(sed -n "${accs_line[$i]}, $ p" $gitacc_locate | cut -f2 -d"="))
-              vi +"${accs_line[$i]}, $ d" +wq $gitacc_locate
-            else
-              acc_info=($(sed -n "${accs_line[$i]}, $((${accs_line[$(($i + 1))]} - 1)) p" $gitacc_locate | cut -f2 -d"="))
-              vi +"${accs_line[$i]}, $((${accs_line[$(($i + 1))]} - 1)) d" +wq $gitacc_locate
-            fi
-              rm -rf "${acc_info[-2]}" "${acc_info[-1]}" # remove ssh private & publish keys
           fi
-        done
-      ;;
-    esac
-  fi
+          
+          _acc # read accounts info.
+         local i=1 # index of users array
+         for acc_name in ${accnames[*]}; do
+           if [ "$acc_name" != "$user_name" ]; then # if is not the match account_name
+             i=$(( $i + 1))
+
+             if [ "$i" -gt "${#accs_line[*]}" ]; then # if there isn't a match account_name 
+               Echo_Color r "Wrong: account name!!"
+               return
+             fi
+           else
+             if [ "$i" = "${#accs_line[*]}" ]; then # is the last account in $gitacc_locate
+               acc_info=($(sed -n "${accs_line[$i]}, $ p" $gitacc_locate | cut -f2 -d"="))
+               vi +"${accs_line[$i]}, $ d" +wq $gitacc_locate
+             else
+               acc_info=($(sed -n "${accs_line[$i]}, $((${accs_line[$(($i + 1))]} - 1)) p" $gitacc_locate | cut -f2 -d"="))
+               vi +"${accs_line[$i]}, $((${accs_line[$(($i + 1))]} - 1)) d" +wq $gitacc_locate
+             fi
+               rm -rf "${acc_info[-2]}" "${acc_info[-1]}" # remove ssh private & publish keys
+           fi
+         done
+       ;;
+        'set_default')
+          if [ -n "$default_account_name" ]; then
+            user_name=$default_account_name
+          else
+            printf "Enter the account name to set as default: "; read user_name
+          fi
+
+         _acc # read accounts info.
+         local account_found=0
+         for acc_name in ${accnames[*]}; do
+           if [ "$acc_name" = "$user_name" ]; then
+             account_found=1
+             break
+           fi
+         done
+
+         if [ $account_found -eq 0 ]; then
+           Echo_Color r "Wrong: account '$user_name' does not exist!!"
+           return
+         fi
+
+         sed -i.bak '/^\[DEFAULT\]/,/^$/d' "$gitacc_locate" 2>/dev/null
+         rm -f "$gitacc_locate.bak" 2>/dev/null
+
+         echo "[DEFAULT]\n\taccount = $user_name" >> "$gitacc_locate"
+         Echo_Color g "Default account set to: $user_name"
+       ;;
+       'show_default')
+         if [ -f "$gitacc_locate" ]; then
+           local default_account=$(grep -A1 '^\[DEFAULT\]' "$gitacc_locate" | grep 'account' | cut -d'=' -f2 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+           if [ -n "$default_account" ]; then
+             echo "$default_account"
+           fi
+         fi
+       ;;
+       'unset_default')
+         if [ -f "$gitacc_locate" ]; then
+           sed -i.bak '/^\[DEFAULT\]/,/^$/d' "$gitacc_locate" 2>/dev/null
+           rm -f "$gitacc_locate.bak" 2>/dev/null
+           Echo_Color g "Default account removed."
+         fi
+       ;;
+       'list')
+         if [ ! -f "$gitacc_locate" ]; then
+           Echo_Color r "No accounts registered yet."
+           return
+         fi
+         
+         _acc # read accounts info
+         
+         if [ "${#accnames[*]}" -eq 0 ]; then
+           Echo_Color r "No accounts found."
+           return
+         fi
+         
+         Echo_Color g "Registered Git Accounts:\n"
+         
+         local i=1
+         for acc_name in ${accnames[*]}; do
+           # Extract email for this account
+           if [ "$i" = "${#accs_line[*]}" ]; then
+             # Last account
+             local email=$(sed -n "${accs_line[$i]}, $ p" "$gitacc_locate" | grep 'email' | cut -f2 -d"=" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+           else
+             # Not last account
+             local email=$(sed -n "${accs_line[$i]}, $((${accs_line[$(($i + 1))]} - 1)) p" "$gitacc_locate" | grep 'email' | cut -f2 -d"=" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+           fi
+           
+           printf "  - %-20s (%s)\n" "$acc_name" "$email"
+           i=$(($i + 1))
+         done
+       ;;
+     esac
+   fi
 
   if [ "${#GIT_ACC[*]}" -gt 1 ]; then
     Echo_Color r 'Wrong: Mutiple Parameters!!\n' # too many input args or accounts 
@@ -226,7 +339,7 @@ function git-acc(){
 
 local function _git-acc(){
   local function _acc(){
-    local users_info=$(cat $HOME/.gitacc | grep -n '\[.*\]')
+    local users_info=$(cat $HOME/.gitacc | grep -n '\[.*\]' | grep -v '\[DEFAULT\]')
     local accs_line=$(echo $users_info | cut -f1 -d ':')
     local accnames=$(echo $users_info | cut -d '[' -f2 | cut -d ']' -f1)
     echo "${accnames[*]}" | tr ' ' '\n'
